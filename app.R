@@ -9,15 +9,15 @@ format.Pace <- function(pace.sec) {
 }
 
 ui <- fluidPage(
-  titlePanel("Concept2 Interval Analyzer"),
+  titlePanel("Concept2 Interval Analyser"),
   sidebarLayout(
     sidebarPanel(
       fileInput("file", "Upload Concept2 CSV", accept = ".csv"),
       numericInput("warmup", "Warm-up Distance (m)", value = 0),
-      numericInput("interval", "Interval Distance (m)", value = 1300),
-      numericInput("n_intervals", "Number of Intervals", value = 3),
-      numericInput("rest", "Rest Distance (m)", value = 1300),
-      actionButton("analyze", "Analyze")
+      numericInput("interval", "Interval Distance (m)", value = 500),
+      numericInput("n_intervals", "Number of Intervals", value = 10),
+      numericInput("rest", "Rest Distance (m)", value = 750),
+      actionButton("analyse", "Analyse")
     ),
     mainPanel(
       plotOutput("pacePlot"),
@@ -27,8 +27,12 @@ ui <- fluidPage(
 )
 
 server <- function(input, output) {
-  observeEvent(input$analyze, {
+  observeEvent(input$analyse, {
     req(input$file)
+    
+    # test data:
+    # data <- read.csv("data/concept2-result-104136592.csv")[-1, ]
+    # input <- list(warmup = 0, interval = 1300, n_intervals = 3, rest = 1300)
     
     data <- read.csv(input$file$datapath)[-1, ]
     data$timer.min <- as.numeric(data$Time..seconds.) / 60
@@ -64,17 +68,23 @@ server <- function(input, output) {
     on.off$mean.rate <- round(apply(on.off[, c("start", "stop")], 1, function(x) {
       mean(data$Stroke.Rate[data$Distance > x[1] & data$Distance < x[2]])
     }))
+    on.off$mean.hr <- round(apply(on.off[, c("start", "stop")], 1, function(x) {
+      mean(data$Heart.Rate[data$Distance > x[1] & data$Distance < x[2]])
+    }))
+    on.off$number <- 1:nrow(on.off)
+    on.off$Distance <- input$interval
     
     output$summaryTable <- renderTable({
       on.off %>% 
-        select(start, stop, Mean.Pace.formatted, mean.rate) %>%
+        select(number, Distance, Mean.Pace.formatted, mean.rate, mean.hr) %>%
         rename(
-          `Start (m)` = start,
-          `Stop (m)` = stop,
-          `Mean Pace` = Mean.Pace.formatted,
-          `Stroke Rate` = mean.rate
+          `Interval` = number,
+          `Distance (m)` = Distance,
+          `Pace` = Mean.Pace.formatted,
+          `Stroke Rate` = mean.rate,
+          `Heart rate` = mean.hr
         )
-    })
+    }, digits = 0)
     
     output$pacePlot <- renderPlot({
       Pace.col <- alpha("darkblue", 0.7)
@@ -117,3 +127,6 @@ server <- function(input, output) {
 }
 
 shinyApp(ui = ui, server = server)
+
+# to publish the app to shinyapps.io:
+# rsconnect::deployApp()
