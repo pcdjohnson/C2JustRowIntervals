@@ -1,6 +1,5 @@
 library(shiny)
 library(scales)
-library(ggplot2)
 library(dplyr)
 
 # function to format pace
@@ -42,7 +41,7 @@ server <- function(input, output) {
     data$Heart.Rate <- as.numeric(data$Heart.Rate)
     
     # Remove unnecessary columns
-    data <- data %>% select(timer.min, Distance, Pace, Stroke.Rate, Heart.Rate)
+    data <- data[, c("timer.min", "Distance", "Pace", "Stroke.Rate", "Heart.Rate")]
     
     # Trim warm-up
     data <- data[data$Distance >= input$warmup, ]
