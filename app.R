@@ -9,7 +9,7 @@ format.Pace <- function(pace.sec) {
 }
 
 ui <- fluidPage(
-  titlePanel("Concept2 Interval Analyser"),
+  titlePanel("Concept2 Intervals Analyser"),
   sidebarLayout(
     sidebarPanel(
       fileInput("file", "Upload Concept2 CSV", accept = ".csv"),
