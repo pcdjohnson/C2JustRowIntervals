@@ -9,6 +9,13 @@ format.Pace <- function(pace.sec) {
 
 ui <- fluidPage(
   titlePanel("Concept2 Intervals Analyser"),
+  
+  p("This app analyses interval workouts from Concept2 rowing machines that were rowed on Just Row."),
+  p("Upload a CSV file exported from the Concept2 Logbook, then specify your warm-up, interval, and rest distances."),
+  p("Click 'Analyse' to view a pace plot and interval summary."),
+  p("The code is freely available on ",
+    tags$a(href = "https://github.com/pcdjohnson/C2JustRowIntervals", "GitHub", target = "_blank"), "."),
+  
   sidebarLayout(
     sidebarPanel(
       fileInput("file", "Upload Concept2 CSV", accept = ".csv"),
