@@ -3,7 +3,7 @@ library(scales)
 library(ggplot2)
 library(dplyr)
 
-# Helper function to format pace
+# function to format pace
 format.Pace <- function(pace.sec) {
   paste(floor(pace.sec / 60), formatC(round(pace.sec %% 60, 1), width = 2, flag = "0"), sep = ":")
 }
