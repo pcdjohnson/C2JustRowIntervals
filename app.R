@@ -63,9 +63,9 @@ server <- function(input, output) {
     req(input$file)
     
     # test data:
-    # data <- read.csv("data/concept2-result-104202528.csv")[-1, ]
     # input <- list(warmup = 0, interval = 1300, n_intervals = 3, rest = 1300, duration.unit = "metres") # distance (m) example
-    # input <- list(warmup = 8.7, interval = 20, n_intervals = 2, rest = 0, duration.unit = "minutes") # time (min) example
+    # data <- read.csv("data/concept2-result-104317619.csv")[-1, ]
+    # input <- list(warmup = 3, interval = 1, n_intervals = 12, rest = 3, duration.unit = "minutes") # time (min) example
 
     data <- read.csv(input$file$datapath)[-1, ]
     data$Time.min <- as.numeric(data$Time..seconds.) / 60
