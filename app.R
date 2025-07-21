@@ -105,27 +105,39 @@ server <- function(input, output) {
     data$Stroke.Rate[is.na(data$Stroke.Rate)] <- data$Stroke.Rate[which(is.na(data$Stroke.Rate))+1]
     
     # Interval summary
-    on.off <- data.frame(t(matrix(c(0, cumsum(c(rbind(on, input$rest))[-length(on)*2])), nrow = 2)))
-    names(on.off) <- c("start", "stop")
-    on.off$Mean.Pace <- apply(on.off[, c("start", "stop")], 1, function(x) {
+    sumtab <- data.frame(t(matrix(c(0, cumsum(c(rbind(on, input$rest))[-length(on)*2])), nrow = 2)))
+    names(sumtab) <- c("start", "stop")
+    sumtab$Mean.Pace <- apply(sumtab[, c("start", "stop")], 1, function(x) {
       mean(data$Pace[data$duration > x[1] & data$duration < x[2]])
     })
-    on.off$Mean.Pace.formatted <- format.Pace(on.off$Mean.Pace)
-    on.off$halfway <- (on.off$start + on.off$stop) / 2
-    on.off$mean.rate <- round(apply(on.off[, c("start", "stop")], 1, function(x) {
+    sumtab$halfway <- (sumtab$start + sumtab$stop) / 2
+    sumtab$mean.rate <- round(apply(sumtab[, c("start", "stop")], 1, function(x) {
       mean(data$Stroke.Rate[data$duration > x[1] & data$duration < x[2]])
     }))
-    on.off$mean.hr <- round(apply(on.off[, c("start", "stop")], 1, function(x) {
+    sumtab$mean.hr <- round(apply(sumtab[, c("start", "stop")], 1, function(x) {
       mean(data$Heart.Rate[data$duration > x[1] & data$duration < x[2]])
     }))
-    on.off$number <- 1:nrow(on.off)
-    on.off$duration <- input$interval
+    sumtab$number <- 1:nrow(sumtab) 
+    sumtab$duration <- input$interval
+    
+    sumtab.mean <- data.frame(rbind(apply(sumtab, 2, mean)))
 
-    on.off.formatted <- on.off[, c("number", "duration", "Mean.Pace.formatted", "mean.rate", "mean.hr")]
-    names(on.off.formatted) <- c("Interval", duration.label, "Pace", "Stroke Rate", "Heart rate")
+    sumtab$number <- factor(sumtab$number, c("Mean", sumtab$number))
+    sumtab.mean$number <- factor("Mean", c("Mean", sumtab$number))
+    
+    sumtab$Mean.Pace.formatted <- format.Pace(sumtab$Mean.Pace)
+    sumtab.mean$Mean.Pace.formatted <- format.Pace(sumtab.mean$Mean.Pace)
+    
+    sumtab.formatted <- sumtab[, c("number", "duration", "Mean.Pace.formatted", "mean.rate", "mean.hr")]
+    sumtab.mean.formatted <- sumtab.mean[, names(sumtab.formatted)]
+    sumtab.final <- rbind(sumtab.mean.formatted, sumtab.formatted)
+    sumtab.final$Interval
+    names(sumtab.final) <-
+      c("Interval", duration.label, "Pace", "Stroke Rate", "Heart rate")
+    sumtab.final$Interval <- as.character(sumtab.final$Interval)
 
     output$summaryTable <- renderTable({
-      on.off.formatted
+      sumtab.final
     }, digits = 0)
     
     output$pacePlot <- renderPlot({
@@ -155,14 +167,14 @@ server <- function(input, output) {
            pos = min(max(data$duration), total), col.axis = hr.col)
       mtext("Heart rate (BPM)", side = 4, line = 2, col = hr.col)
       
-      text(x = on.off$halfway, y = on.off$Mean.Pace * 0.92, labels = format.Pace(on.off$Mean.Pace),
+      text(x = sumtab$halfway, y = sumtab$Mean.Pace * 0.92, labels = format.Pace(sumtab$Mean.Pace),
            col = Pace.col, adj = c(0.5, 1))
-      text(x = on.off$halfway, y = on.off$Mean.Pace * 0.96, labels = paste(on.off$mean.rate, "s/m"),
+      text(x = sumtab$halfway, y = sumtab$Mean.Pace * 0.96, labels = paste(sumtab$mean.rate, "s/m"),
            col = Pace.col, adj = c(0.5, 0), cex = 0.6)
       
-      arrows(x0 = on.off$start, x1 = on.off$stop, y0 = 162, y1 = 162,
+      arrows(x0 = sumtab$start, x1 = sumtab$stop, y0 = 162, y1 = 162,
              length = 0, col = "red", lwd = 2)
-      arrows(x0 = on.off$start[-1], x1 = on.off$stop[-nrow(on.off)], y0 = 162, y1 = 162,
+      arrows(x0 = sumtab$start[-1], x1 = sumtab$stop[-nrow(sumtab)], y0 = 162, y1 = 162,
              length = 0, col = "green", lwd = 2)
     })
   })
